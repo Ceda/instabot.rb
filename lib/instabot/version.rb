@@ -1,4 +1,3 @@
 module Version
-  VERSION = "0.1.38"
-  # DESCRIPTION = ""
+  VERSION = '0.1.38'.freeze
 end

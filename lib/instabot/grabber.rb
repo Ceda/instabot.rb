@@ -18,9 +18,7 @@ module Grabber
       end
     end
 
-    data = JSON.parse(response.body)
-    data.extend Hashie::Extensions::DeepFind
-
+    data          = parse_response(response.body)
     @informations = {
       followers:   data.deep_find('followed_by')['count'],
       following:   data.deep_find('follows')['count'],
@@ -48,9 +46,7 @@ module Grabber
       end
     end
 
-    data	= JSON.parse(response.body)
-    data.extend Hashie::Extensions::DeepFind
-
+    data          = parse_response(response.body)
     @informations = {
       id:                  data.deep_find('id'),
       is_video:            data.deep_find('is_video'),
@@ -67,7 +63,7 @@ module Grabber
 
     unless @infinite_tags == true
       tags = @informations[:text].encode('UTF-8', invalid: :replace, undef: :replace, replace: '?').split(/\W+/)
-      id  = 0
+      id   = 0
       tags.each do |tag|
         if tag == '_' || tag == '' || tag.nil?
           tags.delete(tag)
@@ -78,23 +74,50 @@ module Grabber
       end
       custom_puts "\n[+] ".cyan + '[' + id.to_s.yellow + '] New tags added'
     end
+    return @informations
   end
 
   def search(tags = [])
     tags.each do |tag|
       url	= "https://www.instagram.com/explore/tags/#{tag}/?__a=1"
       custom_print '[+] '.cyan + "Searching in [##{tag}] tag"
-      response = @agent.get(url)
-      data     = JSON.parse(response.body)
-      data.extend Hashie::Extensions::DeepFind
-      owners      = data.deep_find_all('owner')
-      media_codes = data.deep_find_all('code')
-      owners.map { |id| users << id['id'] }
-      media_codes.map { |code| medias << code }
+      response    = @agent.get(url)
+      data        = parse_response(response.body)
+      # owners      = data.deep_find_all('owner')
+      # media_codes = data.deep_find_all('code')
+      # owners.map { |id| users << id['id'] }
+      # media_codes.map { |code| medias << code }
+
+      data.deep_fetch('tag', 'media', 'nodes').map { |node|
+        users << node['owner']['id']
+        medias << node['id']
+      }
+
       Config.options.tags.delete(tag)
     end
 
     custom_puts "\n[+] ".cyan + 'Total grabbed users [' + users.size.to_s.yellow + ']'
     custom_puts '[+] '.cyan + 'Total grabbed medias [' + medias.size.to_s.yellow + "]\n"
+  end
+
+  # def media_to_follow(tags = [])
+  #   tags.each do |tag|
+  #     url	= "https://www.instagram.com/explore/tags/#{tag}/?__a=1"
+  #     custom_print '[+] '.cyan + "Searching in [##{tag}] tag"
+  #     response    = @agent.get(url)
+  #     data        = parse_response(response.body)
+  #     data.deep_fetch('tag', 'media', 'nodes').map { |node|
+  #       to_follow[node['code']] = node['owner']['id']
+  #     }
+  #   end
+  # end
+
+  private
+
+  def parse_response(body)
+    data = JSON.parse(body)
+    data.extend Hashie::Extensions::DeepFind
+    data.extend Hashie::Extensions::DeepFetch
+    data
   end
 end

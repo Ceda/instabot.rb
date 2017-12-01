@@ -9,33 +9,50 @@ module Modes
 
       loop do
         if !maximums_are_full?
+
           if !follows_in_day_are_full?
             @maximums[:follows_in_day] += 1
-            auto_follow
+            @maximums[:likes_in_day]   += 1
+
+            users.each_with_index do |_user, i|
+              like medias[i]
+              follow users[i]
+
+              custom_puts '[+] '.cyan + "Like array #{i}"
+
+              fall_in_asleep
+            end
           else
             custom_puts '[+] '.cyan + 'Maximum follows per day'
           end
 
-          if !unfollows_in_day_are_full?
-            @maximums[:unfollows_in_day] += 1
-            auto_unfollow
-          else
-            custom_puts '[+] '.cyan + 'Maximum unfollows per day'
-          end
-
-          if !likes_in_day_are_full?
-            @maximums[:likes_in_day] += 1
-            auto_like
-          else
-            custom_puts '[+] '.cyan + 'Maximum likes per day'
-          end
-
-          if !comments_in_day_are_full?
-            @maximums[:comments_in_day] += 1
-            auto_comment
-          else
-            custom_puts '[+] '.cyan + 'Maximum comments per day'
-          end
+          # if !follows_in_day_are_full?
+          #   @maximums[:follows_in_day] += 1
+          #   auto_follow
+          # else
+          #   custom_puts '[+] '.cyan + 'Maximum follows per day'
+          # end
+          #
+          # if !unfollows_in_day_are_full?
+          #   @maximums[:unfollows_in_day] += 1
+          #   auto_unfollow
+          # else
+          #   custom_puts '[+] '.cyan + 'Maximum unfollows per day'
+          # end
+          #
+          # if !likes_in_day_are_full?
+          #   @maximums[:likes_in_day] += 1
+          #   auto_like
+          # else
+          #   custom_puts '[+] '.cyan + 'Maximum likes per day'
+          # end
+          #
+          # if !comments_in_day_are_full?
+          #   @maximums[:comments_in_day] += 1
+          #   auto_comment
+          # else
+          #   custom_puts '[+] '.cyan + 'Maximum comments per day'
+          # end
         else
           check_date
           sleep 1
@@ -67,7 +84,6 @@ module Modes
         custom_puts "\n[+] ".cyan + 'User followed!'.green.bold
         @maximums[:follows_in_day] += 1
         id                         += 1
-        fall_in_asleep
       rescue Exception => e
         puts "an error detected ... #{e} #{e.backtrace}\nignored"
         id += 1
@@ -115,7 +131,6 @@ module Modes
         custom_puts "\n[+] ".cyan + 'Media liked'.green.bold
         @maximums[:likes_in_day] += 1
         id                       += 1
-        fall_in_asleep
       rescue Exception => e
         puts "an error detected ... #{e}\n#{e.backtrace.inspect}\nignored"
         id += 1

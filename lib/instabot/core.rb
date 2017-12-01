@@ -1,4 +1,4 @@
-%w[colorize mechanize io/console hashie json logger pp active_support/core_ext/numeric/time rbconfig].each { |gem| require gem }
+%w[colorize mechanize io/console hashie json logger pp active_support/core_ext/numeric/time rbconfig pry].each { |gem| require gem }
 
 class Instabot
   include Version
@@ -11,10 +11,11 @@ class Instabot
   include Log
   include Protocol
 
-  attr_accessor :users, :medias
+  attr_accessor :users, :medias, :to_follow
 
   def initialize(mode = :default)
     @login_mode   = mode
+    @to_follow    = {}
     @users        = []
     @medias       = []
     @log_counter  = 0
@@ -68,6 +69,7 @@ class Instabot
       }
     else
       {
+        tags:                 [],
         max_like_per_day:     :infinite,
         max_follow_per_day:   :infinite,
         max_unfollow_per_day: :infinite,
